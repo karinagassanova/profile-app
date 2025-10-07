@@ -9,6 +9,9 @@ import "./db/index.js";
 const app = express();
 const port = process.env.PORT;
 
+// Use IMAGE environment variable; default to profile-1.jpg if not set
+const profileImage = process.env.IMAGE || "profile-1.jpg";
+
 app.use(cors());
 app.use(express.json());
 app.use("/accounts", usersRouter);
@@ -18,9 +21,14 @@ app.get("/", function (req, res) {
 });
 
 app.get("/profile-picture", function (req, res) {
-  let img = fs.readFileSync(path.resolve("./images/profile-1.jpg"));
-  res.writeHead(200, { "Content-Type": "image/jpg" });
-  res.end(img, "binary");
+  const imgPath = path.resolve(`./images/${profileImage}`);
+  if (fs.existsSync(imgPath)) {
+    const img = fs.readFileSync(imgPath);
+    res.writeHead(200, { "Content-Type": "image/jpg" });
+    res.end(img, "binary");
+  } else {
+    res.status(404).send("Image not found");
+  }
 });
 
 app.use(defaultErrHandler);
